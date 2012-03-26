@@ -1,4 +1,7 @@
 <?php
+namespace MyPDO;
+use \PDO;
+
 /**
  * 
  * @author shen2
@@ -17,7 +20,7 @@
  * 删除了_getDummyTable()和相关代码
  * 删除了$_tableCols
  */
-class MyPDO_Select
+class Select
 {
     const DISTINCT       = 'distinct';
     const COLUMNS        = 'columns';
@@ -64,9 +67,9 @@ class MyPDO_Select
     protected $_bind = array();
 
     /**
-     * MyPDO_Adapter object.
+     * Adapter object.
      *
-     * @var MyPDO_Adapter
+     * @var Adapter
      */
     protected $_adapter;
 
@@ -126,9 +129,9 @@ class MyPDO_Select
     /**
      * Class constructor
      *
-     * @param MyPDO_Adapter $adapter
+     * @param Adapter $adapter
      */
-    public function __construct(MyPDO_Adapter $adapter)
+    public function __construct(Adapter $adapter)
     {
         $this->_adapter = $adapter;
         $this->_parts = self::$_partsInit;
@@ -148,7 +151,7 @@ class MyPDO_Select
      * Set bind variables
      *
      * @param mixed $bind
-     * @return MyPDO_Select
+     * @return Select
      */
     public function bind($bind)
     {
@@ -161,7 +164,7 @@ class MyPDO_Select
      * Makes the query SELECT DISTINCT.
      *
      * @param bool $flag Whether or not the SELECT is DISTINCT (default true).
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function distinct($flag = true)
     {
@@ -180,18 +183,18 @@ class MyPDO_Select
      * The correlation name is prepended to all columns fetched for this
      * table.
      *
-     * The second parameter can be a single string or MyPDO_Expr object,
-     * or else an array of strings or MyPDO_Expr objects.
+     * The second parameter can be a single string or Expr object,
+     * or else an array of strings or Expr objects.
      *
      * The first parameter can be null or an empty string, in which case
      * no correlation name is generated or prepended to the columns named
      * in the second parameter.
      *
-     * @param  array|string|MyPDO_Expr $name The table name or an associative array
+     * @param  array|string|Expr $name The table name or an associative array
      *                                         relating correlation name to table name.
-     * @param  array|string|MyPDO_Expr $cols The columns to select from this table.
+     * @param  array|string|Expr $cols The columns to select from this table.
      * @param  string $schema The schema name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function from($name, $cols = '*', $schema = null)
     {
@@ -201,12 +204,12 @@ class MyPDO_Select
     /**
      * Specifies the columns used in the FROM clause.
      *
-     * The parameter can be a single string or MyPDO_Expr object,
-     * or else an array of strings or MyPDO_Expr objects.
+     * The parameter can be a single string or Expr object,
+     * or else an array of strings or Expr objects.
      *
-     * @param  array|string|MyPDO_Expr $cols The columns to select from this table.
+     * @param  array|string|Expr $cols The columns to select from this table.
      * @param  string $correlationName Correlation name of target table. OPTIONAL
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function columns($cols = '*', $correlationName = null)
     {
@@ -217,10 +220,10 @@ class MyPDO_Select
 
         if (!array_key_exists($correlationName, $this->_parts[self::FROM])) {
             /**
-             * @see MyPDO_SelectException
+             * @see SelectException
              */
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException("No table has been specified for the FROM clause");
+            throw new SelectException("No table has been specified for the FROM clause");
         }
 
         $this->_tableCols($correlationName, $cols);
@@ -231,7 +234,7 @@ class MyPDO_Select
     /**
      * Adds a UNION clause to the query.
      *
-     * The first parameter has to be an array of MyPDO_Select or
+     * The first parameter has to be an array of Select or
      * sql query strings.
      *
      * <code>
@@ -243,20 +246,20 @@ class MyPDO_Select
      * </code>
      *
      * @param  array $select Array of select clauses for the union.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function union($select = array(), $type = self::SQL_UNION)
     {
         if (!is_array($select)) {
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException(
-                "union() only accepts an array of MyPDO_Select instances of sql query strings."
+            throw new SelectException(
+                "union() only accepts an array of Select instances of sql query strings."
             );
         }
 
         if (!in_array($type, self::$_unionTypes)) {
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException("Invalid union type '{$type}'");
+            throw new SelectException("Invalid union type '{$type}'");
         }
 
         foreach ($select as $target) {
@@ -272,11 +275,11 @@ class MyPDO_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|MyPDO_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function join($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -293,11 +296,11 @@ class MyPDO_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|MyPDO_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function joinInner($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -314,11 +317,11 @@ class MyPDO_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|MyPDO_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function joinLeft($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -336,11 +339,11 @@ class MyPDO_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|MyPDO_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function joinRight($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -358,11 +361,11 @@ class MyPDO_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|MyPDO_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function joinFull($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -376,10 +379,10 @@ class MyPDO_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|MyPDO_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function joinCross($name, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -396,10 +399,10 @@ class MyPDO_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|MyPDO_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function joinNatural($name, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -436,7 +439,7 @@ class MyPDO_Select
      * @param string   $cond  The WHERE condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function where($cond, $value = null, $type = null)
     {
@@ -453,7 +456,7 @@ class MyPDO_Select
      * @param string   $cond  The WHERE condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      *
      * @see where()
      */
@@ -468,7 +471,7 @@ class MyPDO_Select
      * Adds grouping to the query.
      *
      * @param  array|string $spec The column(s) to group by.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function group($spec)
     {
@@ -478,7 +481,7 @@ class MyPDO_Select
 
         foreach ($spec as $val) {
             if (preg_match('/\(.*\)/', (string) $val)) {
-                $val = new MyPDO_Expr($val);
+                $val = new Expr($val);
             }
             $this->_parts[self::GROUP][] = $val;
         }
@@ -496,7 +499,7 @@ class MyPDO_Select
      * @param string $cond The HAVING condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function having($cond, $value = null, $type = null)
     {
@@ -521,7 +524,7 @@ class MyPDO_Select
      * @param string $cond The HAVING condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      *
      * @see having()
      */
@@ -544,7 +547,7 @@ class MyPDO_Select
      * Adds a row order to the query.
      *
      * @param mixed $spec The column(s) and direction to order by.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function order($spec)
     {
@@ -554,7 +557,7 @@ class MyPDO_Select
 
         // force 'ASC' or 'DESC' on each order spec, default is ASC.
         foreach ($spec as $val) {
-            if ($val instanceof MyPDO_Expr) {
+            if ($val instanceof Expr) {
                 $expr = $val->__toString();
                 if (empty($expr)) {
                     continue;
@@ -570,7 +573,7 @@ class MyPDO_Select
                     $direction = $matches[2];
                 }
                 if (preg_match('/\(.*\)/', $val)) {
-                    $val = new MyPDO_Expr($val);
+                    $val = new Expr($val);
                 }
                 $this->_parts[self::ORDER][] = array($val, $direction);
             }
@@ -584,7 +587,7 @@ class MyPDO_Select
      *
      * @param int $count OPTIONAL The number of rows to return.
      * @param int $offset OPTIONAL Start returning after this many rows.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function limit($count = null, $offset = null)
     {
@@ -598,7 +601,7 @@ class MyPDO_Select
      *
      * @param int $page Limit results to this page number.
      * @param int $rowCount Use this many rows per page.
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function limitPage($page, $rowCount)
     {
@@ -613,7 +616,7 @@ class MyPDO_Select
      * Makes the query SELECT FOR UPDATE.
      *
      * @param bool $flag Whether or not the SELECT is FOR UPDATE (default true).
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function forUpdate($flag = true)
     {
@@ -626,14 +629,14 @@ class MyPDO_Select
      *
      * @param string $part
      * @return mixed
-     * @throws MyPDO_SelectException
+     * @throws SelectException
      */
     public function getPart($part)
     {
         $part = strtolower($part);
         if (!array_key_exists($part, $this->_parts)) {
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException("Invalid Select part '$part'");
+            throw new SelectException("Invalid Select part '$part'");
         }
         return $this->_parts[$part];
     }
@@ -680,7 +683,7 @@ class MyPDO_Select
      * Clear parts of the Select object, or an individual part.
      *
      * @param string $part OPTIONAL
-     * @return MyPDO_Select
+     * @return Select
      */
     public function reset($part = null)
     {
@@ -693,10 +696,10 @@ class MyPDO_Select
     }
 
     /**
-     * Gets the MyPDO_Adapter for this
-     * particular MyPDO_Select object.
+     * Gets the Adapter for this
+     * particular Select object.
      *
-     * @return MyPDO_Adapter
+     * @return Adapter
      */
     public function getAdapter()
     {
@@ -712,26 +715,26 @@ class MyPDO_Select
      * as described in the from() method.
      *
      * @param  null|string $type Type of join; inner, left, and null are currently supported
-     * @param  array|string|MyPDO_Expr $name Table name
+     * @param  array|string|Expr $name Table name
      * @param  string $cond Join on this condition
      * @param  array|string $cols The columns to select from the joined table
      * @param  string $schema The database name to specify, if any.
-     * @return MyPDO_Select This MyPDO_Select object
-     * @throws MyPDO_SelectException
+     * @return Select This Select object
+     * @throws SelectException
      */
     protected function _join($type, $name, $cond, $cols, $schema = null)
     {
         if (!in_array($type, self::$_joinTypes) && $type != self::FROM) {
             /**
-             * @see MyPDO_SelectException
+             * @see SelectException
              */
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException("Invalid join type '$type'");
+            throw new SelectException("Invalid join type '$type'");
         }
 
         if (count($this->_parts[self::UNION])) {
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException("Invalid use of table with " . self::SQL_UNION);
+            throw new SelectException("Invalid use of table with " . self::SQL_UNION);
         }
 
         if (empty($name)) {
@@ -750,7 +753,7 @@ class MyPDO_Select
                 }
                 break;
             }
-        } else if ($name instanceof MyPDO_Expr|| $name instanceof MyPDO_Select) {
+        } else if ($name instanceof Expr|| $name instanceof Select) {
             $tableName = $name;
             $correlationName = $this->_uniqueCorrelation('t');
         } else if (preg_match('/^(.+)\s+AS\s+(.+)$/i', $name, $m)) {
@@ -770,10 +773,10 @@ class MyPDO_Select
         if (!empty($correlationName)) {
             if (array_key_exists($correlationName, $this->_parts[self::FROM])) {
                 /**
-                 * @see MyPDO_SelectException
+                 * @see SelectException
                  */
                 //require_once 'Zend/Db/Select/Exception.php';
-                throw new MyPDO_SelectException("You cannot define a correlation name '$correlationName' more than once");
+                throw new SelectException("You cannot define a correlation name '$correlationName' more than once");
             }
 
             if ($type == self::FROM) {
@@ -836,13 +839,13 @@ class MyPDO_Select
      * * joinRightUsing
      * * joinLeftUsing
      *
-     * @return MyPDO_Select This MyPDO_Select object.
+     * @return Select This Select object.
      */
     public function _joinUsing($type, $name, $cond, $cols = '*', $schema = null)
     {
         if (empty($this->_parts[self::FROM])) {
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException("You can only perform a joinUsing after specifying a FROM table");
+            throw new SelectException("You can only perform a joinUsing after specifying a FROM table");
         }
 
         $join  = $this->_adapter->quoteIdentifier(key($this->_parts[self::FROM]), true);
@@ -905,9 +908,9 @@ class MyPDO_Select
                     $col = $m[1];
                     $alias = $m[2];
                 }
-                // Check for columns that look like functions and convert to MyPDO_Expr
+                // Check for columns that look like functions and convert to Expr
                 if (preg_match('/\(.*\)/', $col)) {
-                    $col = new MyPDO_Expr($col);
+                    $col = new Expr($col);
                 } elseif (preg_match('/(.+)\.(.+)/', $col, $m)) {
                     $currentCorrelationName = $m[1];
                     $col = $m[2];
@@ -961,7 +964,7 @@ class MyPDO_Select
     {
         if (count($this->_parts[self::UNION])) {
             //require_once 'Zend/Db/Select/Exception.php';
-            throw new MyPDO_SelectException("Invalid use of where clause with " . self::SQL_UNION);
+            throw new SelectException("Invalid use of where clause with " . self::SQL_UNION);
         }
 
         if ($value !== null) {
@@ -1036,11 +1039,11 @@ class MyPDO_Select
         $columns = array();
         foreach ($this->_parts[self::COLUMNS] as $columnEntry) {
             list($correlationName, $column, $alias) = $columnEntry;
-            if ($column instanceof MyPDO_Expr) {
+            if ($column instanceof Expr) {
                 $columns[] = $this->_adapter->quoteColumnAs($column, $alias, true);
             } else {
                 if ($column == self::SQL_WILDCARD) {
-                    $column = new MyPDO_Expr(self::SQL_WILDCARD);
+                    $column = new Expr(self::SQL_WILDCARD);
                     $alias = null;
                 }
                 if (empty($correlationName)) {
@@ -1106,7 +1109,7 @@ class MyPDO_Select
             $parts = count($this->_parts[self::UNION]);
             foreach ($this->_parts[self::UNION] as $cnt => $union) {
                 list($target, $type) = $union;
-                if ($target instanceof MyPDO_Select) {
+                if ($target instanceof Select) {
                     $target = $target->assemble();
                 }
                 $sql .= $target;
@@ -1251,9 +1254,9 @@ class MyPDO_Select
      * for joinUsing syntax
      *
      * @param string $method
-     * @param array $args OPTIONAL MyPDO_TableSelect query modifier
-     * @return MyPDO_Select
-     * @throws MyPDO_SelectException If an invalid method is called.
+     * @param array $args OPTIONAL TableSelect query modifier
+     * @return Select
+     * @throws SelectException If an invalid method is called.
      */
     public function __call($method, array $args)
     {
@@ -1271,11 +1274,11 @@ class MyPDO_Select
                 $type .= ' join';
                 if (!in_array($type, self::$_joinTypes)) {
                     //require_once 'Zend/Db/Select/Exception.php';
-                    throw new MyPDO_SelectException("Unrecognized method '$method()'");
+                    throw new SelectException("Unrecognized method '$method()'");
                 }
                 if (in_array($type, array(self::CROSS_JOIN, self::NATURAL_JOIN))) {
                     //require_once 'Zend/Db/Select/Exception.php';
-                    throw new MyPDO_SelectException("Cannot perform a joinUsing with method '$method()'");
+                    throw new SelectException("Cannot perform a joinUsing with method '$method()'");
                 }
             } else {
                 $type = self::INNER_JOIN;
@@ -1285,7 +1288,7 @@ class MyPDO_Select
         }
 
         //require_once 'Zend/Db/Select/Exception.php';
-        throw new MyPDO_SelectException("Unrecognized method '$method()'");
+        throw new SelectException("Unrecognized method '$method()'");
     }
 
     /**
@@ -1312,14 +1315,14 @@ class MyPDO_Select
      * Uses the current fetchMode for the adapter.
      *
      * @param mixed                 $fetchMode Override current fetch mode.
-     * @return MyPDO_Statement
+     * @return Statement
      */
     public function fetchAll($fetchMode = null)
     {
     	if ($fetchMode === null) {
             $fetchMode = $this->_adapter->getFetchMode();
         }
-		return new MyPDO_Statement($this, $fetchMode);
+		return new Statement($this, $fetchMode);
     }
 
     /**
@@ -1335,7 +1338,7 @@ class MyPDO_Select
      */
     public function fetchAssoc()
     {
-        return new MyPDO_Statement($this, PDO::FETCH_ASSOC);
+        return new Statement($this, PDO::FETCH_ASSOC);
     }
 
     /**
@@ -1345,7 +1348,7 @@ class MyPDO_Select
      */
     public function fetchCol()
     {
-        return new MyPDO_Statement($this, PDO::FETCH_COLUMN, 0);
+        return new Statement($this, PDO::FETCH_COLUMN, 0);
     }
 
     /**
@@ -1358,7 +1361,7 @@ class MyPDO_Select
      */
     public function fetchPairs()
     {
-        return new MyPDO_Statement($this, PDO::FETCH_KEY_PAIR);
+        return new Statement($this, PDO::FETCH_KEY_PAIR);
     }
     
     /**
@@ -1367,7 +1370,7 @@ class MyPDO_Select
      * @return PDOStatement
      */
     public function fetchFunc($func){
-        return new MyPDO_Statement($this, PDO::FETCH_FUNC, $func);
+        return new Statement($this, PDO::FETCH_FUNC, $func);
     }
     
     /**
@@ -1377,7 +1380,7 @@ class MyPDO_Select
      * @return PDOStatement
      */
     public function fetchClass($class, $ctor_args = array()){
-        return new MyPDO_Statement($this, PDO::FETCH_CLASS, $class, $ctor_args);
+        return new Statement($this, PDO::FETCH_CLASS, $class, $ctor_args);
     }
     
     /**

@@ -1,5 +1,7 @@
 <?php
-class MyPDO_Expr
+namespace MyPDO;
+
+class Expr
 {
     /**
      * Storage for the SQL expression.

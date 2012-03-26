@@ -1,14 +1,16 @@
 <?php
-abstract class MyPDO_DataObjectCluster extends MyPDO_DataObject{
+namespace MyPDO;
+
+abstract class DataObjectCluster extends DataObject{
 	//在单机类的基础上派生。
 	
 	protected $_slaveDb;
 	
     /**
-     * Returns an instance of a MyPDO_TableSelect object.
+     * Returns an instance of a TableSelect object.
      *
      * @param bool $withFromPart Whether or not to include the from part of the select based on the table
-     * @return MyPDO_TableSelect
+     * @return TableSelect
      */
     public static function selectFromMaster($withFromPart = self::SELECT_WITHOUT_FROM_PART)
     {
@@ -35,7 +37,7 @@ abstract class MyPDO_DataObjectCluster extends MyPDO_DataObject{
 
     	if (null === $row) {
             //require_once 'Zend/Db/Table/Row/Exception.php';
-            throw new MyPDO_DataObjectException('Cannot refresh row as parent is missing');
+            throw new DataObjectException('Cannot refresh row as parent is missing');
         }
 		
         $this->_cleanData = $row->getArrayCopy();

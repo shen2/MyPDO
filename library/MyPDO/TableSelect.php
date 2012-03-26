@@ -1,4 +1,7 @@
 <?php
+namespace MyPDO;
+use \PDO;
+
 /**
  * 
  * @author shen2
@@ -6,10 +9,10 @@
  * 增加了fetchAll 和 fetchRow 方法
  * 
  */
-class MyPDO_TableSelect extends MyPDO_Select
+class TableSelect extends Select
 {
     /**
-     * Table schema for parent MyPDO_DataObject.
+     * Table schema for parent DataObject.
      *
      * @var array
      */
@@ -37,7 +40,7 @@ class MyPDO_TableSelect extends MyPDO_Select
     /**
      * Return the table that created this select object
      *
-     * @return MyPDO_DataObject_Abstract
+     * @return DataObject_Abstract
      */
     public function getTable()
     {
@@ -66,7 +69,7 @@ class MyPDO_TableSelect extends MyPDO_Select
     public function isReadOnly()
     {
         $readOnly = false;
-        $fields   = $this->getPart(MyPDO_Select::COLUMNS);
+        $fields   = $this->getPart(Select::COLUMNS);
         
         if (!count($fields)) {
             return $readOnly;
@@ -84,7 +87,7 @@ class MyPDO_TableSelect extends MyPDO_Select
                 case ($column == self::SQL_WILDCARD):
                     break;
 
-                case ($column instanceof MyPDO_Expr):
+                case ($column instanceof Expr):
                     $readOnly = true;
                     break 2;
             }
@@ -98,10 +101,10 @@ class MyPDO_TableSelect extends MyPDO_Select
      *
      * The table name can be expressed
      *
-     * @param  array|string|MyPDO_Expr $name The table name or an associative array relating table name to correlation name.
-     * @param  array|string|MyPDO_Expr $cols The columns to select from this table.
+     * @param  array|string|Expr $name The table name or an associative array relating table name to correlation name.
+     * @param  array|string|Expr $cols The columns to select from this table.
      * @param  string $schema The schema name to specify, if any.
-     * @return MyPDO_TableSelect This MyPDO_TableSelect object.
+     * @return TableSelect This TableSelect object.
      */
     public function from($name, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -110,16 +113,16 @@ class MyPDO_TableSelect extends MyPDO_Select
 
     /**
      * Performs a validation on the select query before passing back to the parent class.
-     * Ensures that only columns from the primary MyPDO_DataObject are returned in the result.
+     * Ensures that only columns from the primary DataObject are returned in the result.
      *
      * @return string|null This object as a SELECT string (or null if a string cannot be produced)
      */
     public function assemble()
     {
         if (count($this->_parts[self::UNION]) == 0) {
-	        $fields  = $this->getPart(MyPDO_Select::COLUMNS);
-	        $primary = $this->_info[MyPDO_DataObject::NAME];
-	        $schema  = $this->_info[MyPDO_DataObject::SCHEMA];
+	        $fields  = $this->getPart(Select::COLUMNS);
+	        $primary = $this->_info[DataObject::NAME];
+	        $schema  = $this->_info[DataObject::SCHEMA];
         	
             // If no fields are specified we assume all fields from primary table
             if (!count($fields)) {
@@ -134,18 +137,18 @@ class MyPDO_TableSelect extends MyPDO_Select
     
     /**
      * 
-     * @return MyPDO_Statement
+     * @return Statement
      */
     public function fetchAll($fetchMode = null){
     	$fetchArgument = $this->_table;
     	if (property_exists($fetchArgument, 'classFunc') && $fetchArgument::$classFunc){
-    		$fetchMode = MyPDO::FETCH_CLASSFUNC;
+    		$fetchMode = FETCH_CLASSFUNC;
     		$fetchArgument = $fetchArgument::$classFunc;
     	}
     	else{
-    		$fetchMode = MyPDO::FETCH_DATAOBJECT;
+    		$fetchMode = FETCH_DATAOBJECT;
     	}
-        return new MyPDO_Statement($this, $fetchMode, $fetchArgument, $this->isReadOnly());
+        return new Statement($this, $fetchMode, $fetchArgument, $this->isReadOnly());
     }
     
     

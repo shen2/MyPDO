@@ -1,4 +1,6 @@
 <?php
+namespace MyPDO;
+
 /**
  * 用 php 5.3 的延迟绑定特性，实现的ORM类
  * 
@@ -19,7 +21,7 @@
  * 
  * 替换了两个方法的名称：
  * Zend_Db_Table_Row_Abstract::toArray() 用 ArrayObject::getArrayCopy() 代替
- * Zend_Db_Table_Row_Abstract::delete() 用 MyPDO_DataObject::remove() 代替
+ * Zend_Db_Table_Row_Abstract::delete() 用 DataObject::remove() 代替
  * 
  * 修改了构造函数的参数列表
  * 将原来一个config数组，改成直接传入三个参数，data, stored, readOnly，以提高10%的fetch性能
@@ -27,7 +29,7 @@
  * @author shen2
  *
  */
-abstract class MyPDO_DataObject extends ArrayObject
+abstract class DataObject extends \ArrayObject
 {
     const ADAPTER          = 'db';
     const SCHEMA           = 'schema';
@@ -41,16 +43,16 @@ abstract class MyPDO_DataObject extends ArrayObject
     const ARRAYOBJECT_FLAGS= 0;//ArrayObject::ARRAY_AS_PROPS;
 
     /**
-     * Default MyPDO_Adapter object.
+     * Default Adapter object.
      *
-     * @var MyPDO_Adapter
+     * @var Adapter
      */
     protected static $_defaultDb = null;
 
     /**
-     * MyPDO_Adapter object.
+     * Adapter object.
      *
-     * @var MyPDO_Adapter
+     * @var Adapter
      */
     protected static $_db;
 
@@ -170,20 +172,20 @@ abstract class MyPDO_DataObject extends ArrayObject
     }
 
     /**
-     * Sets the default MyPDO_Adapter for all Zend_Db_Table objects.
+     * Sets the default Adapter for all Zend_Db_Table objects.
      *
-     * @param  MyPDO_Adapter $db an Adapter object
+     * @param  Adapter $db an Adapter object
      * @return void
      */
-    public static function setDefaultAdapter(MyPDO_Adapter $db)
+    public static function setDefaultAdapter(Adapter $db)
     {
         self::$_db = $db;
     }
 
     /**
-     * Gets the default MyPDO_Adapter for all Zend_Db_Table objects.
+     * Gets the default Adapter for all Zend_Db_Table objects.
      *
-     * @return MyPDO_Adapter or null
+     * @return Adapter or null
      */
     public static function getDefaultAdapter()
     {
@@ -191,17 +193,17 @@ abstract class MyPDO_DataObject extends ArrayObject
     }
 
     /**
-     * @param  MyPDO_Adapter $db an Adapter object
+     * @param  Adapter $db an Adapter object
      */
-    protected static function _setAdapter(MyPDO_Adapter $db)
+    protected static function _setAdapter(Adapter $db)
     {
         static::$_db = $db;
     }
 
     /**
-     * Gets the MyPDO_Adapter for this particular Zend_Db_Table object.
+     * Gets the Adapter for this particular Zend_Db_Table object.
      *
-     * @return MyPDO_Adapter
+     * @return Adapter
      */
     public static function getAdapter()
     {
@@ -247,9 +249,9 @@ abstract class MyPDO_DataObject extends ArrayObject
     {
         if (! static::$_db) {
             static::$_db = self::getDefaultAdapter();
-            if (!static::$_db instanceof MyPDO_Adapter) {
+            if (!static::$_db instanceof Adapter) {
                 //require_once 'Zend/Db/Table/Exception.php';
-                throw new MyPDO_DataObjectException('No adapter found for ' . get_called_class());
+                throw new DataObjectException('No adapter found for ' . get_called_class());
             }
         }
     }
@@ -298,38 +300,38 @@ abstract class MyPDO_DataObject extends ArrayObject
 
         if (!array_key_exists($key, $info)) {
             //require_once 'Zend/Db/Table/Exception.php';
-            throw new MyPDO_DataObjectException('There is no table information for the key "' . $key . '"');
+            throw new DataObjectException('There is no table information for the key "' . $key . '"');
         }
 
         return $info[$key];
     }
 
     /**
-     * Returns an instance of a MyPDO_TableSelect object.
+     * Returns an instance of a TableSelect object.
      *
      * @param bool $withFromPart Whether or not to include the from part of the select based on the table
-     * @return MyPDO_TableSelect
+     * @return TableSelect
      */
     public static function select($withFromPart = self::SELECT_WITHOUT_FROM_PART)
     {
         //require_once 'Zend/Db/Table/Select.php';
-        $select = new MyPDO_TableSelect(get_called_class());
+        $select = new TableSelect(get_called_class());
         if ($withFromPart == self::SELECT_WITH_FROM_PART) {
-            $select->from(static::$_name, MyPDO_Select::SQL_WILDCARD, static::$_schema);
+            $select->from(static::$_name, Select::SQL_WILDCARD, static::$_schema);
         }
         return $select;
     }
     
     /**
-     * Returns an instance of a MyPDO_TableSelect object.
+     * Returns an instance of a TableSelect object.
      *
-     * @param string|array|MyPDO_Expr $columns
-     * @return MyPDO_TableSelect
+     * @param string|array|Expr $columns
+     * @return TableSelect
      */
     public static function selectCol($columns = null)
     {
-        $select = new MyPDO_TableSelect(get_called_class());
-        $select->from(static::$_name, $columns === null ? MyPDO_Select::SQL_WILDCARD : $columns, static::$_schema);
+        $select = new TableSelect(get_called_class());
+        $select->from(static::$_name, $columns === null ? Select::SQL_WILDCARD : $columns, static::$_schema);
         return $select;
     }
 
@@ -457,7 +459,7 @@ abstract class MyPDO_DataObject extends ArrayObject
      *
      * @param  mixed $key The value(s) of the primary keys.
      * @return SplFixedArray Row(s) matching the criteria.
-     * @throws MyPDO_DataObjectException
+     * @throws DataObjectException
      */
     public static function find()
     {
@@ -466,7 +468,7 @@ abstract class MyPDO_DataObject extends ArrayObject
 
         if (count($args) != count($keyNames)) {
             //require_once 'Zend/Db/Table/Exception.php';
-            throw new MyPDO_DataObjectException("Too few or too many columns for the primary key");
+            throw new DataObjectException("Too few or too many columns for the primary key");
         }
 
         $whereList = array();
@@ -475,7 +477,7 @@ abstract class MyPDO_DataObject extends ArrayObject
             $keyValuesCount = count($keyValues);
             // Coerce the values to an array.
             // Don't simply typecast to array, because the values
-            // might be MyPDO_Expr objects.
+            // might be Expr objects.
             if (!is_array($keyValues)) {
                 $keyValues = array($keyValues);
             }
@@ -483,7 +485,7 @@ abstract class MyPDO_DataObject extends ArrayObject
                 $numberTerms = $keyValuesCount;
             } else if ($keyValuesCount != $numberTerms) {
                 //require_once 'Zend/Db/Table/Exception.php';
-                throw new MyPDO_DataObjectException("Missing value(s) for the primary key");
+                throw new DataObjectException("Missing value(s) for the primary key");
             }
             $keyValues = array_values($keyValues);
             for ($i = 0; $i < $keyValuesCount; ++$i) {
@@ -514,7 +516,7 @@ abstract class MyPDO_DataObject extends ArrayObject
 
         // issue ZF-5775 (empty where clause should return empty rowset)
         if ($whereClause == null) {
-            return new SplFixedArray(0);
+            return new \SplFixedArray(0);
         }
 
         return static::fetchAll($whereClause);
@@ -525,11 +527,11 @@ abstract class MyPDO_DataObject extends ArrayObject
      *
      * Honors the Zend_Db_Adapter fetch mode.
      *
-     * @param string|array $where  OPTIONAL An SQL WHERE clause or MyPDO_TableSelect object.
+     * @param string|array $where  OPTIONAL An SQL WHERE clause or TableSelect object.
      * @param string|array                      $order  OPTIONAL An SQL ORDER clause.
      * @param int                               $count  OPTIONAL An SQL LIMIT count.
      * @param int                               $offset OPTIONAL An SQL LIMIT offset.
-     * @return MyPDO_Statement The row results per the Zend_Db_Adapter fetch mode.
+     * @return Statement The row results per the Zend_Db_Adapter fetch mode.
      */
     public static function fetchAll($where = null, $order = null, $count = null, $offset = null)
     {
@@ -548,12 +550,12 @@ abstract class MyPDO_DataObject extends ArrayObject
     }
 
     /**
-     * Fetches one row in an object of type MyPDO_DataObject,
+     * Fetches one row in an object of type DataObject,
      * or returns null if no row matches the specified criteria.
      *
-     * @param string|array $where  OPTIONAL An SQL WHERE clause or MyPDO_TableSelect object.
+     * @param string|array $where  OPTIONAL An SQL WHERE clause or TableSelect object.
      * @param string|array                      $order  OPTIONAL An SQL ORDER clause.
-     * @return MyPDO_DataObject|null The row results per the
+     * @return DataObject|null The row results per the
      *     Zend_Db_Adapter fetch mode, or null if no row found.
      */
     public static function fetchRow($where = null, $order = null)
@@ -574,7 +576,7 @@ abstract class MyPDO_DataObject extends ArrayObject
      *
      * @param  array $data OPTIONAL data to populate in the new row.
      * @param  string $defaultSource OPTIONAL flag to force default values into new row
-     * @return MyPDO_DataObject
+     * @return DataObject
      */
     public static function createRow(array $data = array())
     {
@@ -587,9 +589,9 @@ abstract class MyPDO_DataObject extends ArrayObject
      * Generate WHERE clause from user-supplied string or array
      *
      * @param  string|array $where  OPTIONAL An SQL WHERE clause.
-     * @return MyPDO_TableSelect
+     * @return TableSelect
      */
-    protected static function _where(MyPDO_TableSelect $select, $where)
+    protected static function _where(TableSelect $select, $where)
     {
         $where = (array) $where;
 
@@ -638,7 +640,7 @@ abstract class MyPDO_DataObject extends ArrayObject
 
     /**
      * A row is marked read only if it contains columns that are not physically represented within
-     * the database schema (e.g. evaluated columns/MyPDO_Expr columns). This can also be passed
+     * the database schema (e.g. evaluated columns/Expr columns). This can also be passed
      * as a run-time config options as a means of protecting row data.
      *
      * @var boolean
@@ -656,7 +658,7 @@ abstract class MyPDO_DataObject extends ArrayObject
      * @param  array $config OPTIONAL Array of user-specified config options.
      * @param
      * @return void
-     * @throws MyPDO_DataObjectException
+     * @throws DataObjectException
      */
     /**
      * 
@@ -685,7 +687,7 @@ abstract class MyPDO_DataObject extends ArrayObject
      * @param  string $columnName The column key.
      * @param  mixed  $value      The value for the property.
      * @return void
-     * @throws MyPDO_DataObjectException
+     * @throws DataObjectException
      */
     public function offsetSet($columnName, $value)
     {
@@ -791,7 +793,7 @@ abstract class MyPDO_DataObject extends ArrayObject
          */
         if ($this->_readOnly === true) {
             //require_once'Zend/Db/Table/Row/Exception.php';
-            throw new MyPDO_DataObjectException('This row has been marked read-only');
+            throw new DataObjectException('This row has been marked read-only');
         }
 
         /**
@@ -849,7 +851,7 @@ abstract class MyPDO_DataObject extends ArrayObject
          */
         if ($this->_readOnly === true) {
             //require_once'Zend/Db/Table/Row/Exception.php';
-            throw new MyPDO_DataObjectException('This row has been marked read-only');
+            throw new DataObjectException('This row has been marked read-only');
         }
 
         /**
@@ -917,7 +919,7 @@ abstract class MyPDO_DataObject extends ArrayObject
          */
         if ($this->_readOnly === true) {
             //require_once'Zend/Db/Table/Row/Exception.php';
-            throw new MyPDO_DataObjectException('This row has been marked read-only');
+            throw new DataObjectException('This row has been marked read-only');
         }
 
         $where = $this->_getWhereQuery();
@@ -944,7 +946,7 @@ abstract class MyPDO_DataObject extends ArrayObject
      * Sets all data in the row from an array.
      *
      * @param  array $data
-     * @return MyPDO_DataObject Provides a fluent interface
+     * @return DataObject Provides a fluent interface
      */
     public function setFromArray(array $data)
     {
@@ -981,7 +983,7 @@ abstract class MyPDO_DataObject extends ArrayObject
             $array = array_intersect_key($this->_cleanData, $primary);
         }
         if (count($primary) != count($array)) {
-            throw new MyPDO_DataObjectException("The specified Table '".get_called_class()."' does not have the same primary key as the Row");
+            throw new DataObjectException("The specified Table '".get_called_class()."' does not have the same primary key as the Row");
         }
         return $array;
     }
@@ -1023,7 +1025,7 @@ abstract class MyPDO_DataObject extends ArrayObject
 
     	if (null === $row) {
             //require_once 'Zend/Db/Table/Row/Exception.php';
-            throw new MyPDO_DataObjectException('Cannot refresh row as parent is missing');
+            throw new DataObjectException('Cannot refresh row as parent is missing');
         }
 		
         $this->_cleanData = $row->getArrayCopy();
@@ -1106,7 +1108,7 @@ abstract class MyPDO_DataObject extends ArrayObject
 		foreach((array) $columns as $col){
 			$method = 'select' . implode('', array_map('ucfirst', explode('_', $col))) . 'Count';
 			$select = static::$method();
-			$data[$col] = new MyPDO_Expr('('.$select->assemble().')');
+			$data[$col] = new Expr('('.$select->assemble().')');
 		}
 		
 		$where = array();

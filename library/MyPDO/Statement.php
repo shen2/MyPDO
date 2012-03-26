@@ -1,5 +1,8 @@
 <?php
-class MyPDO_Statement implements IteratorAggregate, Countable
+namespace MyPDO;
+use \PDO;
+
+class Statement implements \IteratorAggregate, \Countable
 {
     /**
      * 尚未发射的语句
@@ -21,7 +24,7 @@ class MyPDO_Statement implements IteratorAggregate, Countable
     
     /**
      * 
-     * @var MyPDO_Select
+     * @var Select
      */
     protected $_select;
     
@@ -68,9 +71,9 @@ class MyPDO_Statement implements IteratorAggregate, Countable
     
     protected function _fetchAll(){
     	switch ($this->_fetchMode){
-    		case MyPDO::FETCH_DATAOBJECT:
+    		case FETCH_DATAOBJECT:
     			self::$_stmt->setFetchMode(PDO::FETCH_ASSOC);
-		    	$rowset = new SplFixedArray(self::$_stmt->rowCount());
+		    	$rowset = new \SplFixedArray(self::$_stmt->rowCount());
 				
 		    	$rowClass = $this->_fetchArgument;
 				foreach (self::$_stmt as $index => $data)
@@ -78,9 +81,9 @@ class MyPDO_Statement implements IteratorAggregate, Countable
 		        
 		        return $rowset;
 		    
-		    case MyPDO::FETCH_CLASSFUNC:
+		    case FETCH_CLASSFUNC:
 		    	self::$_stmt->setFetchMode(PDO::FETCH_ASSOC);
-		    	$rowset = new SplFixedArray(self::$_stmt->rowCount());
+		    	$rowset = new \SplFixedArray(self::$_stmt->rowCount());
 				
 		    	$classFunc = $this->_fetchArgument;
 		    	foreach (self::$_stmt as $index => $data){

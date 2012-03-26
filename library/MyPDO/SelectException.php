@@ -1,4 +1,6 @@
 <?php
-class MyPDO_SelectException extends Exception
+namespace MyPDO;
+
+class SelectException extends Exception
 {
 }

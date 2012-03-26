@@ -1,5 +1,7 @@
 <?php
-class MyPDO_AdapterException extends Exception
+namespace MyPDO;
+
+class AdapterException extends Exception
 {
     protected $_chainedException = null;
 

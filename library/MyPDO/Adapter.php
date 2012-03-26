@@ -1,4 +1,7 @@
 <?php
+namespace MyPDO;
+use \PDO;
+
 /**
  * 
  * @author shen2
@@ -26,7 +29,7 @@
  * limit函数中的count大小检查
  * 构造函数中
         if (!is_array($config)) {
-            throw new MyPDO_AdapterException('Adapter parameters must be in an array or a Zend_Config object');
+            throw new AdapterException('Adapter parameters must be in an array or a Zend_Config object');
         }
             switch ($case) {
                 case PDO::CASE_LOWER:
@@ -35,14 +38,14 @@
                     $this->_caseFolding = $case;
                     break;
                 default:
-                    throw new MyPDO_AdapterException('Case must be one of the following constants: '
+                    throw new AdapterException('Case must be one of the following constants: '
                         . 'PDO::CASE_NATURAL, PDO::CASE_LOWER, PDO::CASE_UPPER');
             }
 
  * 
  *
  */
-class MyPDO_Adapter
+class Adapter
 {
     /**
      * User-provided configuration
@@ -59,10 +62,10 @@ class MyPDO_Adapter
     protected $_fetchMode = PDO::FETCH_ASSOC;
 
     /**
-     * Query profiler object, of type Zend_Db_Profiler
+     * Query profiler object, of type Profiler
      * or a subclass of that.
      *
-     * @var Zend_Db_Profiler
+     * @var Profiler
      */
     protected $_profiler;
 
@@ -71,7 +74,7 @@ class MyPDO_Adapter
      *
      * @var string
      */
-    protected $_defaultProfilerClass = 'Zend_Db_Profiler';
+    protected $_defaultProfilerClass = 'MyPDO\Profiler';
 
     /**
      * Database connection
@@ -143,9 +146,9 @@ class MyPDO_Adapter
         //$this->_checkRequiredOptions($config);
 
         $options = array(
-            MyPDO::CASE_FOLDING           => $this->_caseFolding,
-            MyPDO::AUTO_QUOTE_IDENTIFIERS => $this->_autoQuoteIdentifiers,
-            MyPDO::FETCH_MODE             => $this->_fetchMode,
+            CASE_FOLDING           => $this->_caseFolding,
+            AUTO_QUOTE_IDENTIFIERS => $this->_autoQuoteIdentifiers,
+            FETCH_MODE             => $this->_fetchMode,
         );
         $driverOptions = array();
 
@@ -181,42 +184,42 @@ class MyPDO_Adapter
 
 
         // obtain the case setting, if there is one
-        if (array_key_exists(MyPDO::CASE_FOLDING, $options)) {
-            $this->_caseFolding = (int) $options[MyPDO::CASE_FOLDING];
+        if (array_key_exists(CASE_FOLDING, $options)) {
+            $this->_caseFolding = (int) $options[CASE_FOLDING];
         }
 
-        if (array_key_exists(MyPDO::FETCH_MODE, $options)) {
-            if (is_string($options[MyPDO::FETCH_MODE])) {
-                $constant = 'PDO::FETCH_' . strtoupper($options[MyPDO::FETCH_MODE]);
+        if (array_key_exists(FETCH_MODE, $options)) {
+            if (is_string($options[FETCH_MODE])) {
+                $constant = 'PDO::FETCH_' . strtoupper($options[FETCH_MODE]);
                 if(defined($constant)) {
-                    $options[MyPDO::FETCH_MODE] = constant($constant);
+                    $options[FETCH_MODE] = constant($constant);
                 }
             }
-            $this->setFetchMode((int) $options[MyPDO::FETCH_MODE]);
+            $this->setFetchMode((int) $options[FETCH_MODE]);
         }
 
         // obtain quoting property if there is one
-        if (array_key_exists(MyPDO::AUTO_QUOTE_IDENTIFIERS, $options)) {
-            $this->_autoQuoteIdentifiers = (bool) $options[MyPDO::AUTO_QUOTE_IDENTIFIERS];
+        if (array_key_exists(AUTO_QUOTE_IDENTIFIERS, $options)) {
+            $this->_autoQuoteIdentifiers = (bool) $options[AUTO_QUOTE_IDENTIFIERS];
         }
 
         // obtain allow serialization property if there is one
-        if (array_key_exists(MyPDO::ALLOW_SERIALIZATION, $options)) {
-            $this->_allowSerialization = (bool) $options[MyPDO::ALLOW_SERIALIZATION];
+        if (array_key_exists(ALLOW_SERIALIZATION, $options)) {
+            $this->_allowSerialization = (bool) $options[ALLOW_SERIALIZATION];
         }
 
         // obtain auto reconnect on unserialize property if there is one
-        if (array_key_exists(MyPDO::AUTO_RECONNECT_ON_UNSERIALIZE, $options)) {
-            $this->_autoReconnectOnUnserialize = (bool) $options[MyPDO::AUTO_RECONNECT_ON_UNSERIALIZE];
+        if (array_key_exists(AUTO_RECONNECT_ON_UNSERIALIZE, $options)) {
+            $this->_autoReconnectOnUnserialize = (bool) $options[AUTO_RECONNECT_ON_UNSERIALIZE];
         }
 
         // 修改了原来的Zend_Db代码，在不开启profiler的情况下，不再生成profiler实例
         $this->_profiler = false;
         
-        if (array_key_exists(MyPDO::PROFILER, $this->_config)) {
-            if ($this->_config[MyPDO::PROFILER])
-            	$this->setProfiler($this->_config[MyPDO::PROFILER]);
-            unset($this->_config[MyPDO::PROFILER]);
+        if (array_key_exists(PROFILER, $this->_config)) {
+            if ($this->_config[PROFILER])
+            	$this->setProfiler($this->_config[PROFILER]);
+            unset($this->_config[PROFILER]);
         }
     }
 
@@ -246,29 +249,29 @@ class MyPDO_Adapter
      * Set the adapter's profiler object.
      *
      * The argument may be a boolean, an associative array, an instance of
-     * Zend_Db_Profiler.
+     * Profiler.
      *
      * A boolean argument sets the profiler to enabled if true, or disabled if
      * false.  The profiler class is the adapter's default profiler class,
-     * Zend_Db_Profiler.
+     * Profiler.
      *
-     * An instance of Zend_Db_Profiler sets the adapter's instance to that
+     * An instance of Profiler sets the adapter's instance to that
      * object.  The profiler is enabled and disabled separately.
      *
      * An associative array argument may contain any of the keys 'enabled',
      * 'class', and 'instance'. The 'enabled' and 'instance' keys correspond to the
      * boolean and object types documented above. The 'class' key is used to name a
-     * class to use for a custom profiler. The class must be Zend_Db_Profiler or a
+     * class to use for a custom profiler. The class must be Profiler or a
      * subclass. The class is instantiated with no constructor arguments. The 'class'
      * option is ignored when the 'instance' option is supplied.
      *
      * An object of type Zend_Config may contain the properties 'enabled', 'class', and
      * 'instance', just as if an associative array had been passed instead.
      *
-     * @param  Zend_Db_Profiler|array|boolean $profiler
-     * @return MyPDO_Adapter Provides a fluent interface
-     * @throws Zend_Db_Profiler_Exception if the object instance or class specified
-     *         is not Zend_Db_Profiler or an extension of that class.
+     * @param  Profiler|array|boolean $profiler
+     * @return Adapter Provides a fluent interface
+     * @throws ProfilerException if the object instance or class specified
+     *         is not Profiler or an extension of that class.
      */
     public function setProfiler($profiler)
     {
@@ -277,14 +280,14 @@ class MyPDO_Adapter
         $profilerInstance = null;
 
         if ($profilerIsObject = is_object($profiler)) {
-            if ($profiler instanceof Zend_Db_Profiler) {
+            if ($profiler instanceof Profiler) {
                 $profilerInstance = $profiler;
             } else {
                 /**
-                 * @see Zend_Db_Profiler_Exception
+                 * @see ProfilerException
                  */
                 //require_once 'Zend/Db/Profiler/Exception.php';
-                throw new Zend_Db_Profiler_Exception('Profiler argument must be an instance of either Zend_Db_Profiler'
+                throw new ProfilerException('Profiler argument must be an instance of either Profiler'
                     . ' or Zend_Config when provided as an object');
             }
         }
@@ -307,11 +310,11 @@ class MyPDO_Adapter
             $profilerInstance = new $profilerClass();
         }
 
-        if (!$profilerInstance instanceof Zend_Db_Profiler) {
-            /** @see Zend_Db_Profiler_Exception */
+        if (!$profilerInstance instanceof Profiler) {
+            /** @see ProfilerException */
             //require_once 'Zend/Db/Profiler/Exception.php';
-            throw new Zend_Db_Profiler_Exception('Class ' . get_class($profilerInstance) . ' does not extend '
-                . 'Zend_Db_Profiler');
+            throw new ProfilerException('Class ' . get_class($profilerInstance) . ' does not extend '
+                . 'Profiler');
         }
 
         if (null !== $enabled) {
@@ -327,7 +330,7 @@ class MyPDO_Adapter
     /**
      * Returns the profiler for this adapter.
      *
-     * @return Zend_Db_Profiler
+     * @return Profiler
      */
     public function getProfiler()
     {
@@ -337,12 +340,12 @@ class MyPDO_Adapter
     /**
      * Leave autocommit mode and begin a transaction.
      *
-     * @return MyPDO_Adapter
+     * @return Adapter
      */
     public function beginTransaction()
     {
         $this->_connect();
-        if ($this->_profiler) $q = $this->_profiler->queryStart('begin', Zend_Db_Profiler::TRANSACTION);
+        if ($this->_profiler) $q = $this->_profiler->queryStart('begin', Profiler::TRANSACTION);
         $this->_beginTransaction();
         if ($this->_profiler) $this->_profiler->queryEnd($q);
         return $this;
@@ -351,12 +354,12 @@ class MyPDO_Adapter
     /**
      * Commit a transaction and return to autocommit mode.
      *
-     * @return MyPDO_Adapter
+     * @return Adapter
      */
     public function commit()
     {
         $this->_connect();
-        if ($this->_profiler) $q = $this->_profiler->queryStart('commit', Zend_Db_Profiler::TRANSACTION);
+        if ($this->_profiler) $q = $this->_profiler->queryStart('commit', Profiler::TRANSACTION);
         $this->_commit();
         if ($this->_profiler) $this->_profiler->queryEnd($q);
         return $this;
@@ -365,12 +368,12 @@ class MyPDO_Adapter
     /**
      * Roll back a transaction and return to autocommit mode.
      *
-     * @return MyPDO_Adapter
+     * @return Adapter
      */
     public function rollBack()
     {
         $this->_connect();
-        if ($this->_profiler) $q = $this->_profiler->queryStart('rollback', Zend_Db_Profiler::TRANSACTION);
+        if ($this->_profiler) $q = $this->_profiler->queryStart('rollback', Profiler::TRANSACTION);
         $this->_rollBack();
         if ($this->_profiler) $this->_profiler->queryEnd($q);
         return $this;
@@ -391,7 +394,7 @@ class MyPDO_Adapter
         $i = 0;
         foreach ($bind as $col => $val) {
             $cols[] = $this->quoteIdentifier($col, true);
-            if ($val instanceof MyPDO_Expr) {
+            if ($val instanceof Expr) {
                 $vals[] = $val->__toString();
                 unset($bind[$col]);
             } else {
@@ -448,12 +451,12 @@ class MyPDO_Adapter
     {
         /**
          * Build "col = ?" pairs for the statement,
-         * except for MyPDO_Expr which is treated literally.
+         * except for Expr which is treated literally.
          */
         $set = array();
         $i = 0;
         foreach ($bind as $col => $val) {
-            if ($val instanceof MyPDO_Expr) {
+            if ($val instanceof Expr) {
                 $val = $val->__toString();
                 unset($bind[$col]);
             } else {
@@ -507,7 +510,7 @@ class MyPDO_Adapter
     }
 
     /**
-     * Convert an array, string, or MyPDO_Expr object
+     * Convert an array, string, or Expr object
      * into a string to put in a WHERE clause.
      *
      * @param mixed $where
@@ -525,7 +528,7 @@ class MyPDO_Adapter
             // is $cond an int? (i.e. Not a condition)
             if (is_int($cond)) {
                 // $term is the full condition
-                if ($term instanceof MyPDO_Expr) {
+                if ($term instanceof Expr) {
                     $term = $term->__toString();
                 }
             } else {
@@ -541,13 +544,13 @@ class MyPDO_Adapter
     }
 
     /**
-     * Creates and returns a new MyPDO_Select object for this adapter.
+     * Creates and returns a new Select object for this adapter.
      *
-     * @return MyPDO_Select
+     * @return Select
      */
     public function select()
     {
-        return new MyPDO_Select($this);
+        return new Select($this);
     }
 
     /**
@@ -572,21 +575,21 @@ class MyPDO_Adapter
      */
     public function quote($value, $type = null)
     {
-        if ($value instanceof MyPDO_Select) {
+        if ($value instanceof Select) {
             return '(' . $value->assemble() . ')';
         }
 
-        if ($value instanceof MyPDO_Expr) {
+        if ($value instanceof Expr) {
             return $value->__toString();
         }
 
         if ($type !== null && array_key_exists($type = strtoupper($type), $this->_numericDataTypes)) {
             $quotedValue = '0';
             switch ($this->_numericDataTypes[$type]) {
-                case MyPDO::INT_TYPE: // 32-bit integer
+                case INT_TYPE: // 32-bit integer
                     $quotedValue = (string) intval($value);
                     break;
-                case MyPDO::BIGINT_TYPE: // 64-bit integer
+                case BIGINT_TYPE: // 64-bit integer
                     // ANSI SQL-style hex literals (e.g. x'[\dA-F]+')
                     // are not supported here, because these are string
                     // literals, not numeric literals.
@@ -602,7 +605,7 @@ class MyPDO_Adapter
                         $quotedValue = $matches[1];
                     }
                     break;
-                case MyPDO::FLOAT_TYPE: // float or decimal
+                case FLOAT_TYPE: // float or decimal
                     $quotedValue = sprintf('%F', $value);
             }
             return $quotedValue;
@@ -678,7 +681,7 @@ class MyPDO_Adapter
      * The actual quote character surrounding the identifiers may vary depending on
      * the adapter.
      *
-     * @param string|array|MyPDO_Expr $ident The identifier.
+     * @param string|array|Expr $ident The identifier.
      * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier.
      */
@@ -690,7 +693,7 @@ class MyPDO_Adapter
     /**
      * Quote a column identifier and alias.
      *
-     * @param string|array|MyPDO_Expr $ident The identifier or expression.
+     * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An alias for the column.
      * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier and alias.
@@ -703,7 +706,7 @@ class MyPDO_Adapter
     /**
      * Quote a table identifier and alias.
      *
-     * @param string|array|MyPDO_Expr $ident The identifier or expression.
+     * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An alias for the table.
      * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier and alias.
@@ -716,7 +719,7 @@ class MyPDO_Adapter
     /**
      * Quote an identifier and an optional alias.
      *
-     * @param string|array|MyPDO_Expr $ident The identifier or expression.
+     * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An optional alias.
      * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
      * @param string $as The string to add between the identifier/expression and the alias.
@@ -724,9 +727,9 @@ class MyPDO_Adapter
      */
     protected function _quoteIdentifierAs($ident, $alias = null, $auto = false, $as = ' AS ')
     {
-        if ($ident instanceof MyPDO_Expr) {
+        if ($ident instanceof Expr) {
             $quoted = $ident->__toString();
-        } elseif ($ident instanceof MyPDO_Select) {
+        } elseif ($ident instanceof Select) {
             $quoted = '(' . $ident->assemble() . ')';
         } else {
             if (is_string($ident)) {
@@ -735,7 +738,7 @@ class MyPDO_Adapter
             if (is_array($ident)) {
                 $segments = array();
                 foreach ($ident as $segment) {
-                    if ($segment instanceof MyPDO_Expr) {
+                    if ($segment instanceof Expr) {
                         $segments[] = $segment->__toString();
                     } else {
                         $segments[] = $this->_quoteIdentifier($segment, $auto);
@@ -799,15 +802,15 @@ class MyPDO_Adapter
      * called when object is getting serialized
      * This disconnects the DB object that cant be serialized
      *
-     * @throws MyPDO_AdapterException
+     * @throws AdapterException
      * @return array
      */
     public function __sleep()
     {
         if ($this->_allowSerialization == false) {
-            /** @see MyPDO_AdapterException */
+            /** @see AdapterException */
             //require_once 'Zend/Db/Adapter/Exception.php';
-            throw new MyPDO_AdapterException(get_class($this) ." is not allowed to be serialized");
+            throw new AdapterException(get_class($this) ." is not allowed to be serialized");
         }
         $this->_connection = false;
         return array_keys(array_diff_key(get_object_vars($this), array('_connection'=>false)));
@@ -916,14 +919,14 @@ class MyPDO_Adapter
      * Special handling for PDO query().
      * All bind parameter names must begin with ':'
      *
-     * @param string|MyPDO_Select $sql The SQL statement with placeholders.
+     * @param string|Select $sql The SQL statement with placeholders.
      * @param array $bind An array of data to bind to the placeholders.
      * @return PDOStatement
      * @throws PDOException.
      */
     public function query($sql, $bind = array())
     {
-        if (empty($bind) && $sql instanceof MyPDO_Select) {
+        if (empty($bind) && $sql instanceof Select) {
             $bind = $sql->getBind();
         }
 
@@ -941,8 +944,8 @@ class MyPDO_Adapter
             // connect to the database if needed
 	        $this->_connect();
 	
-	        // is the $sql a MyPDO_Select object?
-	        if ($sql instanceof MyPDO_Select) {
+	        // is the $sql a Select object?
+	        if ($sql instanceof Select) {
 	            if (empty($bind)) {
 	                $bind = $sql->getBind();
 	            }
@@ -952,13 +955,13 @@ class MyPDO_Adapter
 	
 	        // make sure $bind to an array;
 	        // don't use (array) typecasting because
-	        // because $bind may be a MyPDO_Expr object
+	        // because $bind may be a Expr object
 	        if (!is_array($bind)) {
 	            $bind = array($bind);
 	        }
 	        
 	        //将结果缓冲当中的结果集读出来
-	        MyPDO_Statement::flush();
+	        Statement::flush();
 	
 	        // prepare and execute the statement with profiling
 	        $stmt = $this->prepare($sql);
@@ -988,11 +991,11 @@ class MyPDO_Adapter
 	        return $stmt;
         //} catch (PDOException $e) {
             /**
-             * @see MyPDO_StatementException
+             * @see StatementException
              */
             //require_once 'Zend/Db/Statement/Exception.php';
             
-        	//throw new MyPDO_StatementException($e->getMessage(), $e->getCode(), $e);
+        	//throw new StatementException($e->getMessage(), $e->getCode(), $e);
         //}
     }
 
@@ -1000,14 +1003,14 @@ class MyPDO_Adapter
      * Executes an SQL statement and return the number of affected rows
      *
      * @param  mixed  $sql  The SQL statement with placeholders.
-     *                      May be a string or MyPDO_Select.
+     *                      May be a string or Select.
      * @return integer      Number of rows that were modified
      *                      or deleted by the SQL statement
      * @throws PDOException
      */
     public function exec($sql)
     {
-        if ($sql instanceof MyPDO_Select) {
+        if ($sql instanceof Select) {
             $sql = $sql->assemble();
         }
 
@@ -1017,19 +1020,19 @@ class MyPDO_Adapter
             if ($affected === false) {
                 $errorInfo = $this->getConnection()->errorInfo();
                 /**
-                 * @see MyPDO_AdapterException
+                 * @see AdapterException
                  */
                 //require_once 'Zend/Db/Adapter/Exception.php';
-                throw new MyPDO_AdapterException($errorInfo[2]);
+                throw new AdapterException($errorInfo[2]);
             }
 
             return $affected;
         //} catch (PDOException $e) {
             /**
-             * @see MyPDO_AdapterException
+             * @see AdapterException
              */
             //require_once 'Zend/Db/Adapter/Exception.php';
-        //    throw new MyPDO_AdapterException($e->getMessage(), $e->getCode(), $e);
+        //    throw new AdapterException($e->getMessage(), $e->getCode(), $e);
         //}
     }
 
@@ -1063,7 +1066,7 @@ class MyPDO_Adapter
      *
      * @param int $mode A PDO fetch mode.
      * @return void
-     * @throws MyPDO_AdapterException
+     * @throws AdapterException
      */
     public function setFetchMode($mode)
     {
@@ -1074,7 +1077,7 @@ class MyPDO_Adapter
 
     /**
      * Keys are UPPERCASE SQL datatypes or the constants
-     * MyPDO::INT_TYPE, MyPDO::BIGINT_TYPE, or MyPDO::FLOAT_TYPE.
+     * INT_TYPE, BIGINT_TYPE, or FLOAT_TYPE.
      *
      * Values are:
      * 0 = 32-bit integer
@@ -1084,22 +1087,22 @@ class MyPDO_Adapter
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        MyPDO::INT_TYPE    => MyPDO::INT_TYPE,
-        MyPDO::BIGINT_TYPE => MyPDO::BIGINT_TYPE,
-        MyPDO::FLOAT_TYPE  => MyPDO::FLOAT_TYPE,
-        'INT'                => MyPDO::INT_TYPE,
-        'INTEGER'            => MyPDO::INT_TYPE,
-        'MEDIUMINT'          => MyPDO::INT_TYPE,
-        'SMALLINT'           => MyPDO::INT_TYPE,
-        'TINYINT'            => MyPDO::INT_TYPE,
-        'BIGINT'             => MyPDO::BIGINT_TYPE,
-        'SERIAL'             => MyPDO::BIGINT_TYPE,
-        'DEC'                => MyPDO::FLOAT_TYPE,
-        'DECIMAL'            => MyPDO::FLOAT_TYPE,
-        'DOUBLE'             => MyPDO::FLOAT_TYPE,
-        'DOUBLE PRECISION'   => MyPDO::FLOAT_TYPE,
-        'FIXED'              => MyPDO::FLOAT_TYPE,
-        'FLOAT'              => MyPDO::FLOAT_TYPE
+        INT_TYPE    => INT_TYPE,
+        BIGINT_TYPE => BIGINT_TYPE,
+        FLOAT_TYPE  => FLOAT_TYPE,
+        'INT'                => INT_TYPE,
+        'INTEGER'            => INT_TYPE,
+        'MEDIUMINT'          => INT_TYPE,
+        'SMALLINT'           => INT_TYPE,
+        'TINYINT'            => INT_TYPE,
+        'BIGINT'             => BIGINT_TYPE,
+        'SERIAL'             => BIGINT_TYPE,
+        'DEC'                => FLOAT_TYPE,
+        'DECIMAL'            => FLOAT_TYPE,
+        'DOUBLE'             => FLOAT_TYPE,
+        'DOUBLE PRECISION'   => FLOAT_TYPE,
+        'FIXED'              => FLOAT_TYPE,
+        'FLOAT'              => FLOAT_TYPE
     );
 
     /**
@@ -1129,7 +1132,7 @@ class MyPDO_Adapter
         $dsn = $this->_dsn();
 
         // create PDO connection
-        if ($this->_profiler) $q = $this->_profiler->queryStart('connect', Zend_Db_Profiler::CONNECT);
+        if ($this->_profiler) $q = $this->_profiler->queryStart('connect', Profiler::CONNECT);
 
         // add the persistence flag if we find it in our config array
         if (isset($this->_config['persistent']) && ($this->_config['persistent'] == true)) {
@@ -1157,10 +1160,10 @@ class MyPDO_Adapter
             
         //} catch (PDOException $e) {
             /**
-             * @see MyPDO_AdapterException
+             * @see AdapterException
              */
             //require_once 'Zend/Db/Adapter/Exception.php';
-            //throw new MyPDO_AdapterException($e->getMessage(), $e->getCode(), $e);
+            //throw new AdapterException($e->getMessage(), $e->getCode(), $e);
         //}
     }
 }

@@ -1,4 +1,6 @@
 <?php
-class MyPDO_DataObjectException extends Exception
+namespace MyPDO;
+
+class DataObjectException extends Exception
 {
 }

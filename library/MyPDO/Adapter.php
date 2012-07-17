@@ -391,7 +391,7 @@ class Adapter
         // extract and quote col names from the array keys
         $cols = array();
         $vals = array();
-        $i = 0;
+        
         foreach ($bind as $col => $val) {
             $cols[] = $this->quoteIdentifier($col, true);
             if ($val instanceof Expr) {
@@ -439,6 +439,50 @@ class Adapter
     	return $this->insert($table, $bind, 'IGNORE');
     }
     
+    public function insertOnDuplicateKeyUpdate($table, array $insertBind, array $updateBind)
+    {
+        // extract and quote col names from the array keys
+        $cols = array();
+        $vals = array();
+        foreach ($insertBind as $col => $val) {
+            $cols[] = $this->quoteIdentifier($col, true);
+            if ($val instanceof Expr) {
+                $vals[] = $val->__toString();
+                unset($insertBind[$col]);
+            } else {
+                $vals[] = '?';
+            }
+        }
+
+        /**
+         * Build "col = ?" pairs for the statement,
+         * except for Expr which is treated literally.
+         */
+        $set = array();
+        foreach ($updateBind as $col => $val) {
+            if ($val instanceof Expr) {
+                $val = $val->__toString();
+                unset($updateBind[$col]);
+            } else {
+                $val = '?';
+            }
+            $set[] = $this->quoteIdentifier($col, true) . ' = ' . $val;
+        }
+
+        // build the statement
+        $sql = "INSERT INTO "
+             . $this->quoteIdentifier($table, true)
+             . ' (' . implode(', ', $cols) . ') '
+             . 'VALUES (' . implode(', ', $vals) . ')'
+             . ' ON DUPLICATE KEY UPDATE ' . implode(', ', $set);
+        
+        // execute the statement and return the number of affected rows
+        $bind = array_merge(array_values($insertBind), array_values($updateBind));
+        $stmt = $this->query($sql, $bind);
+        $result = $stmt->rowCount();
+        return $result;
+    }
+    
     /**
      * Updates table rows with specified data based on a WHERE clause.
      *
@@ -454,7 +498,6 @@ class Adapter
          * except for Expr which is treated literally.
          */
         $set = array();
-        $i = 0;
         foreach ($bind as $col => $val) {
             if ($val instanceof Expr) {
                 $val = $val->__toString();

@@ -26,6 +26,7 @@ class Select
     const COLUMNS        = 'columns';
     const FROM           = 'from';
     const UNION          = 'union';
+    const INDEX          = 'index';
     const WHERE          = 'where';
     const GROUP          = 'group';
     const HAVING         = 'having';
@@ -47,6 +48,7 @@ class Select
     const SQL_UNION_ALL  = 'UNION ALL';
     const SQL_FROM       = 'FROM';
     const SQL_WHERE      = 'WHERE';
+    const SQL_FORCE_INDEX= 'FORCE INDEX';
     const SQL_DISTINCT   = 'DISTINCT';
     const SQL_GROUP_BY   = 'GROUP BY';
     const SQL_ORDER_BY   = 'ORDER BY';
@@ -85,6 +87,7 @@ class Select
         self::COLUMNS      => array(),
         self::UNION        => array(),
         self::FROM         => array(),
+        self::INDEX        => array(),
         self::WHERE        => array(),
         self::GROUP        => array(),
         self::HAVING       => array(),
@@ -407,6 +410,11 @@ class Select
     public function joinNatural($name, $cols = self::SQL_WILDCARD, $schema = null)
     {
         return $this->_join(self::NATURAL_JOIN, $name, null, $cols, $schema);
+    }
+    
+    public function forceIndex($indexList, $for = null){
+    	$this->_parts[self::INDEX][] = self::SQL_FORCE_INDEX . ($for ? ' FOR ' . $for : '') . ' (' . implode(',', (array) $indexList) . ')';
+    	return $this;
     }
 
     /**
@@ -1120,6 +1128,14 @@ class Select
         }
 
         return $sql;
+    }
+    
+    protected function _renderIndex($sql){
+    	foreach ($this->_parts[self::INDEX] as $part) {
+    		$sql .= ' ' . $part;
+    	}
+    	
+    	return $sql;
     }
 
     /**

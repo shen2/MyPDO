@@ -32,4 +32,10 @@ trait CountersTrait{
 		
 		return static::update($data, $where);
 	}
+	
+	public function inc($column, $inc = 1){
+		$this[$column] = new Expr($column . ($inc >= 0 ? '+' : '') . $inc);
+		
+		return $this;
+	}
 }

@@ -43,13 +43,6 @@ abstract class DataObject extends \ArrayObject
     const ARRAYOBJECT_FLAGS= 0;//ArrayObject::ARRAY_AS_PROPS;
 
     /**
-     * Default Adapter object.
-     *
-     * @var Adapter
-     */
-    protected static $_defaultDb = null;
-
-    /**
      * Adapter object.
      *
      * @var Adapter
@@ -417,7 +410,19 @@ abstract class DataObject extends \ArrayObject
         $tableSpec = (static::$_schema ? static::$_schema . '.' : '') . static::$_name;
         return static::$_db->insertDelayed($tableSpec, $data);
     }
-
+    
+    /**
+     * Inserts Ignore a new row.
+     *
+     * @param  array  $data  Column-value pairs.
+     * @return mixed         The primary key of the row inserted.
+     */
+    public static function insertIgnore(array $data)
+    {
+    	$tableSpec = (static::$_schema ? static::$_schema . '.' : '') . static::$_name;
+    	return static::$_db->insertIgnore($tableSpec, $data);
+    }
+    
     /**
      * 使用insertOnDuplicateKeyUpdate 插入一条记录，插入后不会refresh
      * 
@@ -774,6 +779,10 @@ abstract class DataObject extends \ArrayObject
     {
         return $this->_connected;
     }
+    
+    public function isModified(){
+    	return !empty($this->_modifiedFields); 
+    }
 
     /**
      * Test the read-only status of the row.
@@ -805,7 +814,7 @@ abstract class DataObject extends \ArrayObject
      * @return mixed The primary key value(s), as an associative array if the
      *     key is compound, or a scalar if the key is single-column.
      */
-    public function save()
+    public function save($realRefresh = true)
     {
         /**
          * If the _cleanData array is empty,
@@ -813,9 +822,9 @@ abstract class DataObject extends \ArrayObject
          * Otherwise it is an UPDATE.
          */
         if (empty($this->_cleanData)) {
-            return $this->_doInsert();
+            return $this->_doInsert($realRefresh);
         } else {
-            return $this->_doUpdate();
+            return $this->_doUpdate($realRefresh);
         }
     }
 
@@ -823,7 +832,7 @@ abstract class DataObject extends \ArrayObject
      * @return mixed The primary key value(s), as an associative array if the
      *     key is compound, or a scalar if the key is single-column.
      */
-    protected function _doInsert()
+    protected function _doInsert($realRefresh = true)
     {
         /**
          * A read-only row cannot be saved.
@@ -872,8 +881,8 @@ abstract class DataObject extends \ArrayObject
         /**
          * Update the _cleanData to reflect that the data has been inserted.
          */
-        $this->_refresh();
-
+        $this->_refresh($realRefresh);
+        
         return $primaryKey;
     }
 
@@ -881,7 +890,7 @@ abstract class DataObject extends \ArrayObject
      * @return mixed The primary key value(s), as an associative array if the
      *     key is compound, or a scalar if the key is single-column.
      */
-    protected function _doUpdate()
+    protected function _doUpdate($realRefresh = true)
     {
         /**
          * A read-only row cannot be saved.
@@ -929,7 +938,7 @@ abstract class DataObject extends \ArrayObject
          * Refresh the data just in case triggers in the RDBMS changed
          * any columns.  Also this resets the _cleanData.
          */
-        $this->_refresh();
+        $this->_refresh($realRefresh);
 
         /**
          * Return the primary key value(s) as an array
@@ -1000,9 +1009,9 @@ abstract class DataObject extends \ArrayObject
      *
      * @return void
      */
-    public function refresh()
+    public function refresh($real = true)
     {
-        return $this->_refresh();
+        return $this->_refresh($real);
     }
 
     /**
@@ -1055,21 +1064,27 @@ abstract class DataObject extends \ArrayObject
      *
      * @return void
      */
-    protected function _refresh()
+    protected function _refresh($real = true)
     {
-        $where = $this->_getWhereQuery();
-        $row = static::fetchRow($where);
-
-    	if (null === $row) {
-            //require_once 'Zend/Db/Table/Row/Exception.php';
-            throw new DataObjectException('Cannot refresh row as parent is missing');
-        }
-		
-        $this->_cleanData = $row->getArrayCopy();
-        $this->exchangeArray($this->_cleanData);
+    	if ($real){
+	        $where = $this->_getWhereQuery();
+	        $row = static::fetchRow($where);
+	
+	    	if (null === $row) {
+	            //require_once 'Zend/Db/Table/Row/Exception.php';
+	            throw new DataObjectException('Cannot refresh row as parent is missing');
+	        }
+			
+	        $this->_cleanData = $row->getArrayCopy();
+	        $this->exchangeArray($this->_cleanData);
+    	}
+    	else{//并不真的从数据库中查询记录，而只是记录当成是全新的
+    		$this->_cleanData = $this->getArrayCopy();
+    	}
+    	
 		$this->_modifiedFields = array();
     }
-
+    
     /**
      * Allows pre-insert logic to be applied to row.
      * Subclasses may override this method.

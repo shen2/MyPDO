@@ -28,5 +28,8 @@ class Expr
     {
         return $this->_expression;
     }
-
+	
+    public static function delta($column, $delta){
+    	return new self($column . ($delta >= 0 ? '+' : '') . $delta);
+    }
 }

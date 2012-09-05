@@ -163,7 +163,7 @@ class Statement implements \IteratorAggregate, \Countable
     	$this->_query();
     	
     	if (is_array($this->_rowset))
-    		return new ArrayIterator($this->_rowset);
+    		return new \ArrayIterator($this->_rowset);
     	
     	return $this->_rowset;
     }
@@ -171,12 +171,31 @@ class Statement implements \IteratorAggregate, \Countable
     public function current(){
     	$this->_query();
     	
-    	return count($this->_rowset) ? current($this->_rowset) : null;
+    	if ($this->_rowset instanceof \SplFixedArray){
+    		// php 5.4.6中有一个bug, 在小概率(5%)情况下，SplFixedArray的count不为0，但是current()取不到实际的数据，var_dump()时也显示SplFixedArray(0)，必须用[0]才能取到数据。
+    		return $this->_rowset->count()
+    			? ($this->_rowset->current() ?: $this->_rowset[0])
+    			: null;
+    	}
+    	else{//普通数组或者其他实现了count和current方法的对象
+    		return count($this->_rowset) ? current($this->_rowset) : null;
+    	}
     }
     
 	public function count() {
 		$this->_query();
     	
     	return count($this->_rowset);
+    }
+    
+    /**
+     * 用来代替current
+     * 
+     * @return mixed
+     */
+    public function first(){
+    	$this->_query();
+    	 
+    	return isset($this->_rowset[0]) ? $this->_rowset[0] : null;
     }
 }

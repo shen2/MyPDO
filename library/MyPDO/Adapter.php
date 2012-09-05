@@ -1166,10 +1166,6 @@ class Adapter
         }
 
         //以下来自PDO::_connect
-        // if we already have a PDO object, no need to re-connect.
-        if ($this->_connection) {
-            return;
-        }
 
         // get the dsn first, because some adapters alter the $_pdoType
         $dsn = $this->_dsn();

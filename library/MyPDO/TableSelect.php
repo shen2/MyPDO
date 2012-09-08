@@ -51,7 +51,7 @@ class TableSelect extends Select
      * Sets the primary table name and retrieves the table schema.
      *
      * @param string $table
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Select object.
      */
     public function setTable($table)
     {

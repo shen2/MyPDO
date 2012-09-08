@@ -69,6 +69,12 @@ class Statement implements \IteratorAggregate, \Countable
     	return $this->_select->assemble();
     }
     
+    public function __call($name, $args){
+    	$this->_query();
+    	 
+    	return call_user_func_array(array($this->_rowset, $name), $args);
+    }
+    
     protected function _fetchAll(){
     	switch ($this->_fetchMode){
     		case FETCH_DATAOBJECT:

@@ -121,7 +121,7 @@ abstract class DataObject extends \ArrayObject
      * setOptions()
      *
      * @param array $options
-     * @return Zend_Db_Table_Abstract
+     * @return void
      */
     public static function setOptions(Array $options)
     {

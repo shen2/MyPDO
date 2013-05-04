@@ -79,7 +79,7 @@ DataObject其实是一个抽象的基类，真正使用的时候需要将它派�
 如果你的数据表是双重主键，并且第二重主键是自增的，可以写成：
 
     protected static $_primary = array('site_id', 'user_id');
-    protected static $_identity = 1;						//	1代表$_primary[1]，即’user_id‘是自增主键
+    protected static $_identity = 1;				//	1代表$_primary[1]，即’user_id‘是自增主键
 
 ## 指定 select 的字段
 如果你想获得指定的字段，而不需要所有字段(*)，可以使用selectCol函数，比如：
@@ -111,7 +111,7 @@ DataObject其实是一个抽象的基类，真正使用的时候需要将它派�
         ->limit(5)
         ->fetchAll();
 
-返回结果是一个MyPDO\Statement，可以直接进行foreach迭代或者count()
+返回值是一个MyPDO\Statement，可以直接进行foreach迭代或者count()
 
 ### fetchRow()方法
 获取一行的方法
@@ -121,14 +121,27 @@ DataObject其实是一个抽象的基类，真正使用的时候需要将它派�
         ->fetchRow();
 
 不需要额外写limit(1)，因为fetchRow()方法会自动给sql语句增加 limit 1
-	
 
 ### fetchOne()方法
+如果结果集是单行单列的，用fetchOne()可以直接得到这个值
     $count = User::selectCol('count(*)')
         ->where('created_at > ?', '2012-12-21')
         ->fetchOne();
 
-如果结果集是单行单列的，用fetchOne()可以直接得到这个值
+
+### find()方法
+主键查询肯定是用得最广泛的，使用find()方法可以简化主键查询的过程。
+
+    $user = User::find(40)->current();
+这样就可以查询到主键为40的user对象，如果记录不存在，返回值是null。
+
+如果想通过多个ID一次查询多条记录，可以写成：
+
+    $userList = User::find(array(1,2,3,4,5));
+返回值是一个MyPDO\Statement，可以直接foreach迭代。注意，结果集中的对象顺序未必和find的参数相同，结果集中的对象数量也可能小于find的参数。
+
+find()还支持多重主键的查询：
+    $relationship = Friendship::find(123,456)->current();
 
 ## MyPDO\Statement
 $select->fetchAll()的返回值是一个MyPDO\Statement对象，这个对象未必含有查询的结果集，而有可能结果还在数据库中进行处理。

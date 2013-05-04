@@ -81,30 +81,82 @@ DataObject其实是一个抽象的基类，真正使用的时候需要将它派�
     protected static $_primary = array('site_id', 'user_id');
     protected static $_identity = 1;				//	1代表$_primary[1]，即’user_id‘是自增主键
 
-## 指定 select 的字段
+## MyPDO\Select 的用法
+通常，我们通过已经派生的MyPDO\DataObject类的静态方法select()来创建 MyPDO\Select 实例。
+
+    $select = User::select();
+    // select * from `pre_users`;
+
+### where()
+为了避免出现sql注入漏洞，所有包含变量的where条件，都应使用?来进行转义。
+
+    $select = User::select()
+        ->where('name like ?', '小钢炮');
+    // select * from `pre_users` where by created_at desc;
+
+如果有多个where条件，以and相连，直接调用多次where()就可以了。
+
+    $select = User::select()
+        ->where('gender = ?', 'male')
+        ->where('age > ?', 40);
+    // select * from `pre_users` where gender = 'male' and age > 40;
+
+### order()
+order()方法的参数就是排序字段名，asc/desc直接写在字符串里。
+
+    $select = User::select()
+        ->order('created_at desc');
+    // select * from `pre_users` order by created_at desc;
+
+如果有多个order字段，直接调用多次order函数就可以了。
+
+    $select = User::select()
+        ->order('name asc')
+        ->order('email asc');
+    // select * from `pre_users` order by name asc, email asc;
+
+### limit()
+第一个参数是limit的字段数，第二个参数是offset(默认是0,可省略)
+
+    $select = User::select()
+        ->order('name asc')
+        ->order('email asc')
+        ->limit(10, 30);
+    // select * from `pre_users` order by name asc, email asc limit 10 offset 30;
+
+### 指定 select 的字段
 如果你想获得指定的字段，而不需要所有字段(*)，可以使用selectCol函数，比如：
 
     $select = User::selectCol('count(*)');
+    // select count(*) from `pre_users`;
 
 如果是多个字段，可以写成：
 
     $select = User::selectCol(array('user_id', 'name', 'email'));
+    // select user_id, name, email from `pre_users`;
 
 如果给字段起别名，可以写成：
 
     $select = User::selectCol(array('id' => 'user_id', 'name', 'email'));
+    // select user_id as id, name, email from `pre_users`;
 
-## join方法
+### join()
 例如现在有 pre_users 表和 pre_posts 表，我们要把posts表的查询结果和users表join。可以写成：
 
     Post::select(true)
-    	->joinInner('pre_users', 'pre_users.user_id = pre_posts.author_id', array('name'=>'site_id', 'date'=>'updated'))
+    	->joinInner('pre_users', 'pre_users.user_id = pre_posts.author_id', array('uid'=>'user_id', 'date'=>'updated'))
     	->where(...)
+    // select `pre_posts`.*, `pre_users`.user_id as id, `pre_users`.updated as date from `pre_posts` inner join pre_users on pre_users.user_id = pre_posts.author_id;
+
+### assemble()
+有时候你不确定写出的MyPDO\Select对象在执行的时候会转换成什么SQL语句，可以使用assemble()方法预览SQL语句
+
+    echo $select->assemble();
 
 ## fetch封装方法
 每个数据表类有四种种常用的调用方式：fetchAll(), fetchRow(), fetchOne() 和 find()
 
-### fetchAll()方法
+### fetchAll()
     $userList = User::select()
         ->where('created_at > ?', '2012-12-21')
         ->order('image_count desc')
@@ -113,7 +165,7 @@ DataObject其实是一个抽象的基类，真正使用的时候需要将它派�
 
 返回值是一个MyPDO\Statement，可以直接进行foreach迭代或者count()
 
-### fetchRow()方法
+### fetchRow()
 获取一行的方法
 
     $user = User::select()
@@ -122,15 +174,14 @@ DataObject其实是一个抽象的基类，真正使用的时候需要将它派�
 
 不需要额外写limit(1)，因为fetchRow()方法会自动给sql语句增加 limit 1
 
-### fetchOne()方法
+### fetchOne()
 如果结果集是单行单列的，用fetchOne()可以直接得到这个值
 
     $count = User::selectCol('count(*)')
         ->where('created_at > ?', '2012-12-21')
         ->fetchOne();
 
-
-### find()方法
+### find()
 主键查询肯定是用得最广泛的，使用find()方法可以简化主键查询的过程。
 
     $user = User::find(40)->current();

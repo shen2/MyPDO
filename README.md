@@ -1,6 +1,6 @@
 MyPDO
 =====
-MyPDO是一个用php编写的依赖PDO的ORM类(Object Rentied Model)，通过它你可以用面向对象的方式来写sql语句，也可以以面向对象的方式来操作每一条数据库记录。
+MyPDO是一个用php编写的依赖PDO的ORM类(Object Relational Mapping)，通过它你可以用面向对象的方式来写sql语句，也可以以面向对象的方式来操作每一条数据库记录。
 
 MyPDO基于Zend Framework 1.x版本中的Zend_Db组件修改而来，经过彻底的修改和优化之后，去掉了对Zend Framework其他组件的依赖。能达到很高的性能，同时给你的编程带来极大的便利。
 
@@ -13,15 +13,15 @@ MyPDO由沈振宇开发，先后用于图虫网和多说网的服务器端php程
 * MyPDO充分利用php SPL中的ArrayObject和SplFixedArray，使对于数据对象的访问、迭代速度相比Zend_Db有数量级的提升。
 
 编程模式
-* 倡导流式接口(fluence interface)
+* 倡导流式接口(fluent interface)
 * 将数据表抽象成静态类，避免了无谓的实例化声明，去掉所有不必要的中间变量和赋值过程，从而简化代码
 * 代码更接近自然语言。
  
 希望MyPDO能让你的php编程变得更优雅，更快乐。
 
 ## 局限性
-* MyPDO虽然有beginTransection()这样的类，但并不支持事务操作（因为作者所涉及的业务都不需要事务操作）
 * MyPDO由于将所有数据表都抽象成静态类，因此无法应对需要做水平Sharding的数据表 (在多说上使用的是经过改进的MyPDO，从而使它支持Sharding)
+* MyPDO虽然有beginTransaction()这样的方法，但事务操作未经过测试，不能保证可用性（因为作者所涉及的业务都不需要事务操作）
 * MyPDO目前不支持主从读写分离，但是会考虑以后支持
 
 ## 环境和依赖
@@ -64,9 +64,10 @@ MyPDO由沈振宇开发，先后用于图虫网和多说网的服务器端php程
     $db = new MyPDO\Adapter($configs);
     MyPDO\DataObject::setDefaultAdapter($db);
     ?>
-出于性能的考虑，即使你使用了autoload机制，仍然建议你显式地主动require以上那些php文件，这样可以减少发动autoload的次数，避免不必要的性能浪费。
+出于性能的考虑，即使你使用了autoload机制，仍然建议你显式地主动require以上那些php类定义文件，这样可以减少发动autoload的次数，避免不必要的性能浪费。
 
-## DataObject类的派生
+## DataObject类
+DataObject是对数据表的抽象，DataObject的静态方法相当于对数据表的操作，实例化的DataObject是数据库记录对象，调用DataObject的动态方法，相当于对数据库记录的操作。
 DataObject其实是一个抽象的基类，真正使用的时候需要将它派生成自己的类。
 
     <?php 

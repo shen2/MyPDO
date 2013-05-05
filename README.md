@@ -4,14 +4,20 @@ MyPDO是一个用php编写的依赖PDO的ORM类(Object Rentied Model)，通过�
 
 MyPDO基于Zend Framework 1.x版本中的Zend_Db组件修改而来，经过彻底的修改和优化之后，去掉了对Zend Framework其他组件的依赖。能达到很高的性能，同时给你的编程带来极大的便利。
 
+MyPDO由沈振宇开发，先后用于图虫网和多说网的服务器端php程序，经过2年多生产环境的考验，可靠稳定。
+
 ## 特性
 
-性能方面，MyPDO会将多个sql语句拼合在一起执行query操作，由于php会在第一条SQL语句执行完成之后就返回，因此能够在同步编程模式中实现类似于“伪异步”的效果，从而减少mysql阻塞时间，大大提高整体性能。
-同时，MyPDO充分利用php SPL中的ArrayObject和SplFixedArray，使对于数据对象的访问、迭代速度相比Zend_Db有数量级的提升。
+性能方面
+* MyPDO会将多个sql语句拼合在一起执行query操作，由于php会在第一条SQL语句执行完成之后就返回，因此能够在同步编程模式中实现类似于“伪异步”的效果，从而减少mysql阻塞时间，大大提高整体性能。
+* MyPDO充分利用php SPL中的ArrayObject和SplFixedArray，使对于数据对象的访问、迭代速度相比Zend_Db有数量级的提升。
 
-编程方式上，MyPDO倡导流式接口(fluence interface)，并且最小化代码，去掉所有不必要的中间变量和赋值过程，并希望让代码更接近自然语言。希望MyPDO能让你的php编程变得更有条理，更快乐。
-
-MyPDO由沈振宇开发，先后用于图虫网和多说网的服务器端php程序，经过2年多生产环境的考验，可靠稳定。
+编程模式
+* 倡导流式接口(fluence interface)
+* 将数据表抽象成静态类，避免了无谓的实例化声明，去掉所有不必要的中间变量和赋值过程，从而简化代码
+* 代码更接近自然语言。
+ 
+希望MyPDO能让你的php编程变得更优雅，更快乐。
 
 ## 局限性
 * MyPDO虽然有beginTransection()这样的类，但并不支持事务操作（因为作者所涉及的业务都不需要事务操作）

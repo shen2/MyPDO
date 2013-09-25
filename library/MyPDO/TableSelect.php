@@ -153,7 +153,7 @@ class TableSelect extends Select
     
     
     public function fetchRow($bind = array(), $fetchMode = null){
-        $this->limit(1);
+        $this->_parts[self::LIMIT_COUNT]  = 1;
         
         $stmt = $this->_adapter->query($this);
         

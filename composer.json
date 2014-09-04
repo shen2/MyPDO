@@ -1,5 +1,5 @@
 {
-	"name": "shen2/MyPDO",
+	"name": "shen2/mypdo",
 	"description": "A php asynchronous library for mysql(PDO)",
 	"minimum-stability": "stable",
 	"license": "MIT",

@@ -1,0 +1,18 @@
+{
+	"name": "shen2/MyPDO",
+	"description": "A php asynchronous library for mysql(PDO)",
+	"minimum-stability": "stable",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Shen Zhenyu",
+			"email": "zhenyupku@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0"
+	},
+	"autoload": {
+		"psr-4": { "MyPDO\\": "src/" }
+	}
+}

@@ -4,7 +4,10 @@ use \PDO;
 
 class Statement implements \IteratorAggregate, \Countable
 {
-    /**
+	const FETCH_DATAOBJECT = 'fetchDataObject';
+	const FETCH_CLASSFUNC = 'fetchClassFunc';
+	
+	/**
      * 尚未发射的语句
      * @var array
      */
@@ -77,7 +80,7 @@ class Statement implements \IteratorAggregate, \Countable
     
     protected function _fetchAll(){
     	switch ($this->_fetchMode){
-    		case FETCH_DATAOBJECT:
+    		case self::FETCH_DATAOBJECT:
     			self::$_stmt->setFetchMode(PDO::FETCH_ASSOC);
 		    	$rowset = new \SplFixedArray(self::$_stmt->rowCount());
 				
@@ -87,7 +90,7 @@ class Statement implements \IteratorAggregate, \Countable
 		        
 		        return $rowset;
 		    
-		    case FETCH_CLASSFUNC:
+		    case self::FETCH_CLASSFUNC:
 		    	self::$_stmt->setFetchMode(PDO::FETCH_ASSOC);
 		    	$rowset = new \SplFixedArray(self::$_stmt->rowCount());
 				

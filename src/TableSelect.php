@@ -142,11 +142,11 @@ class TableSelect extends Select
     public function fetchAll($fetchMode = null){
     	$fetchArgument = $this->_table;
     	if (property_exists($fetchArgument, 'classFunc') && $fetchArgument::$classFunc){
-    		$fetchMode = FETCH_CLASSFUNC;
+    		$fetchMode = Statement::FETCH_CLASSFUNC;
     		$fetchArgument = $fetchArgument::$classFunc;
     	}
     	else{
-    		$fetchMode = FETCH_DATAOBJECT;
+    		$fetchMode = Statement::FETCH_DATAOBJECT;
     	}
         return new Statement($this, $fetchMode, $fetchArgument, $this->isReadOnly());
     }

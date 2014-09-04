@@ -45,9 +45,47 @@ use \PDO;
  * 
  *
  */
+
 class Adapter
 {
-    /**
+	/**
+	 * Use the PROFILER constant in the config of a Zend_Db_Adapter.
+	 */
+	const PROFILER = 'profiler';
+	
+	/**
+	 * Use the CASE_FOLDING constant in the config of a Zend_Db_Adapter.
+	 */
+	const CASE_FOLDING = 'caseFolding';
+	
+	/**
+	 * Use the FETCH_MODE constant in the config of a Zend_Db_Adapter.
+	 */
+	const FETCH_MODE = 'fetchMode';
+	
+	/**
+	 * Use the AUTO_QUOTE_IDENTIFIERS constant in the config of a Zend_Db_Adapter.
+	 */
+	const AUTO_QUOTE_IDENTIFIERS = 'autoQuoteIdentifiers';
+	
+	/**
+	 * Use the ALLOW_SERIALIZATION constant in the config of a Zend_Db_Adapter.
+	 */
+	const ALLOW_SERIALIZATION = 'allowSerialization';
+	
+	/**
+	 * Use the AUTO_RECONNECT_ON_UNSERIALIZE constant in the config of a Zend_Db_Adapter.
+	 */
+	const AUTO_RECONNECT_ON_UNSERIALIZE = 'autoReconnectOnUnserialize';
+	
+	/**
+	 * Use the INT_TYPE, BIGINT_TYPE, and FLOAT_TYPE with the quote() method.
+	 */
+	const INT_TYPE = 0;
+	const BIGINT_TYPE = 1;
+	const FLOAT_TYPE  = 2;
+	
+	/**
      * User-provided configuration
      *
      * @var array
@@ -146,9 +184,9 @@ class Adapter
         //$this->_checkRequiredOptions($config);
 
         $options = array(
-            CASE_FOLDING           => $this->_caseFolding,
-            AUTO_QUOTE_IDENTIFIERS => $this->_autoQuoteIdentifiers,
-            FETCH_MODE             => $this->_fetchMode,
+            self::CASE_FOLDING           => $this->_caseFolding,
+            self::AUTO_QUOTE_IDENTIFIERS => $this->_autoQuoteIdentifiers,
+            self::FETCH_MODE             => $this->_fetchMode,
         );
         $driverOptions = array();
 
@@ -184,42 +222,42 @@ class Adapter
 
 
         // obtain the case setting, if there is one
-        if (array_key_exists(CASE_FOLDING, $options)) {
-            $this->_caseFolding = (int) $options[CASE_FOLDING];
+        if (array_key_exists(self::CASE_FOLDING, $options)) {
+            $this->_caseFolding = (int) $options[self::CASE_FOLDING];
         }
 
-        if (array_key_exists(FETCH_MODE, $options)) {
-            if (is_string($options[FETCH_MODE])) {
-                $constant = 'PDO::FETCH_' . strtoupper($options[FETCH_MODE]);
+        if (array_key_exists(self::FETCH_MODE, $options)) {
+            if (is_string($options[self::FETCH_MODE])) {
+                $constant = 'PDO::FETCH_' . strtoupper($options[self::FETCH_MODE]);
                 if(defined($constant)) {
-                    $options[FETCH_MODE] = constant($constant);
+                    $options[self::FETCH_MODE] = constant($constant);
                 }
             }
-            $this->setFetchMode((int) $options[FETCH_MODE]);
+            $this->setFetchMode((int) $options[self::FETCH_MODE]);
         }
 
         // obtain quoting property if there is one
-        if (array_key_exists(AUTO_QUOTE_IDENTIFIERS, $options)) {
-            $this->_autoQuoteIdentifiers = (bool) $options[AUTO_QUOTE_IDENTIFIERS];
+        if (array_key_exists(self::AUTO_QUOTE_IDENTIFIERS, $options)) {
+            $this->_autoQuoteIdentifiers = (bool) $options[self::AUTO_QUOTE_IDENTIFIERS];
         }
 
         // obtain allow serialization property if there is one
-        if (array_key_exists(ALLOW_SERIALIZATION, $options)) {
-            $this->_allowSerialization = (bool) $options[ALLOW_SERIALIZATION];
+        if (array_key_exists(self::ALLOW_SERIALIZATION, $options)) {
+            $this->_allowSerialization = (bool) $options[self::ALLOW_SERIALIZATION];
         }
 
         // obtain auto reconnect on unserialize property if there is one
-        if (array_key_exists(AUTO_RECONNECT_ON_UNSERIALIZE, $options)) {
-            $this->_autoReconnectOnUnserialize = (bool) $options[AUTO_RECONNECT_ON_UNSERIALIZE];
+        if (array_key_exists(self::AUTO_RECONNECT_ON_UNSERIALIZE, $options)) {
+            $this->_autoReconnectOnUnserialize = (bool) $options[self::AUTO_RECONNECT_ON_UNSERIALIZE];
         }
 
         // 修改了原来的Zend_Db代码，在不开启profiler的情况下，不再生成profiler实例
         $this->_profiler = false;
         
-        if (array_key_exists(PROFILER, $this->_config)) {
-            if ($this->_config[PROFILER])
-            	$this->setProfiler($this->_config[PROFILER]);
-            unset($this->_config[PROFILER]);
+        if (array_key_exists(self::PROFILER, $this->_config)) {
+            if ($this->_config[self::PROFILER])
+            	$this->setProfiler($this->_config[self::PROFILER]);
+            unset($this->_config[self::PROFILER]);
         }
     }
 
@@ -629,10 +667,10 @@ class Adapter
         if ($type !== null && array_key_exists($type = strtoupper($type), $this->_numericDataTypes)) {
             $quotedValue = '0';
             switch ($this->_numericDataTypes[$type]) {
-                case INT_TYPE: // 32-bit integer
+                case self::INT_TYPE: // 32-bit integer
                     $quotedValue = (string) intval($value);
                     break;
-                case BIGINT_TYPE: // 64-bit integer
+                case self::BIGINT_TYPE: // 64-bit integer
                     // ANSI SQL-style hex literals (e.g. x'[\dA-F]+')
                     // are not supported here, because these are string
                     // literals, not numeric literals.
@@ -648,7 +686,7 @@ class Adapter
                         $quotedValue = $matches[1];
                     }
                     break;
-                case FLOAT_TYPE: // float or decimal
+                case self::FLOAT_TYPE: // float or decimal
                     $quotedValue = sprintf('%F', $value);
             }
             return $quotedValue;
@@ -725,7 +763,7 @@ class Adapter
      * the adapter.
      *
      * @param string|array|Expr $ident The identifier.
-     * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
+     * @param boolean $auto If true, heed the self::AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier.
      */
     public function quoteIdentifier($ident, $auto=false)
@@ -738,7 +776,7 @@ class Adapter
      *
      * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An alias for the column.
-     * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
+     * @param boolean $auto If true, heed the self::AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier and alias.
      */
     public function quoteColumnAs($ident, $alias, $auto=false)
@@ -751,7 +789,7 @@ class Adapter
      *
      * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An alias for the table.
-     * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
+     * @param boolean $auto If true, heed the self::AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier and alias.
      */
     public function quoteTableAs($ident, $alias = null, $auto = false)
@@ -764,7 +802,7 @@ class Adapter
      *
      * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An optional alias.
-     * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
+     * @param boolean $auto If true, heed the self::AUTO_QUOTE_IDENTIFIERS config option.
      * @param string $as The string to add between the identifier/expression and the alias.
      * @return string The quoted identifier and alias.
      */
@@ -805,7 +843,7 @@ class Adapter
      * Quote an identifier.
      *
      * @param  string $value The identifier or expression.
-     * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
+     * @param boolean $auto If true, heed the self::AUTO_QUOTE_IDENTIFIERS config option.
      * @return string        The quoted identifier and alias.
      */
     protected function _quoteIdentifier($value, $auto=false)
@@ -1130,22 +1168,22 @@ class Adapter
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        INT_TYPE    => INT_TYPE,
-        BIGINT_TYPE => BIGINT_TYPE,
-        FLOAT_TYPE  => FLOAT_TYPE,
-        'INT'                => INT_TYPE,
-        'INTEGER'            => INT_TYPE,
-        'MEDIUMINT'          => INT_TYPE,
-        'SMALLINT'           => INT_TYPE,
-        'TINYINT'            => INT_TYPE,
-        'BIGINT'             => BIGINT_TYPE,
-        'SERIAL'             => BIGINT_TYPE,
-        'DEC'                => FLOAT_TYPE,
-        'DECIMAL'            => FLOAT_TYPE,
-        'DOUBLE'             => FLOAT_TYPE,
-        'DOUBLE PRECISION'   => FLOAT_TYPE,
-        'FIXED'              => FLOAT_TYPE,
-        'FLOAT'              => FLOAT_TYPE
+        self::INT_TYPE    => self::INT_TYPE,
+        self::BIGINT_TYPE => self::BIGINT_TYPE,
+        self::FLOAT_TYPE  => self::FLOAT_TYPE,
+        'INT'                => self::INT_TYPE,
+        'INTEGER'            => self::INT_TYPE,
+        'MEDIUMINT'          => self::INT_TYPE,
+        'SMALLINT'           => self::INT_TYPE,
+        'TINYINT'            => self::INT_TYPE,
+        'BIGINT'             => self::BIGINT_TYPE,
+        'SERIAL'             => self::BIGINT_TYPE,
+        'DEC'                => self::FLOAT_TYPE,
+        'DECIMAL'            => self::FLOAT_TYPE,
+        'DOUBLE'             => self::FLOAT_TYPE,
+        'DOUBLE PRECISION'   => self::FLOAT_TYPE,
+        'FIXED'              => self::FLOAT_TYPE,
+        'FLOAT'              => self::FLOAT_TYPE
     );
 
     /**
